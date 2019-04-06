@@ -21,7 +21,7 @@ WEAK_LABELED = "weak_labeled"
 LABELED = "labeled"
 REFINEMENT = "refinement"
 
-EVAL_TYPES = (LABELED, UNLABELED, WEAK_LABELED, REFINEMENT)
+EVAL_TYPES = (LABELED, UNLABELED, WEAK_LABELED)
 
 # Pairs that are considered as equivalent for the purposes of evaluation
 EQUIV = ((EdgeTags.Process, EdgeTags.State),
@@ -146,7 +146,7 @@ class Evaluator:
         only = [{c: {y: tags for y, tags in d.items() if y not in mutual[c]} for c, d in m.items()} for m in maps]
         res = EvaluatorResults((c, SummaryStatistics(len(mutual[c]), len(only[0].get(c, ())), len(only[1].get(c, ())),
                                                      None if counters is None else counters.get(c))) for c in mutual)
-        if self.verbose:
+        if self.verbose or eval_type == REFINEMENT:
             print("Evaluation type: (" + eval_type + ")")
             if self.units and p1 is not None:
                 print("==> Mutual Units:")
@@ -328,7 +328,7 @@ class SummaryStatistics:
 
 
 def evaluate(guessed, ref, converter=None, verbose=False, constructions=DEFAULT,
-             units=False, fscore=True, errors=False, normalize=True, eval_type=None, ref_yield_tags=None, **kwargs):
+             units=False, fscore=True, errors=False, normalize=True, eval_types=None, ref_yield_tags=None, **kwargs):
     """
     Compare two passages and return requested diagnostics and scores, possibly printing them too.
     NOTE: since normalize=True by default, this method is destructive: it modifies the given passages before evaluation.
@@ -356,4 +356,4 @@ def evaluate(guessed, ref, converter=None, verbose=False, constructions=DEFAULT,
 
     evaluator = Evaluator(verbose, constructions, units, fscore, errors)
     return Scores((evaluation_type, evaluator.get_scores(guessed, ref, evaluation_type, r=ref_yield_tags))
-                  for evaluation_type in ([eval_type] if eval_type else EVAL_TYPES))
+                  for evaluation_type in (eval_types if eval_types else EVAL_TYPES))
