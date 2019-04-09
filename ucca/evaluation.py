@@ -62,7 +62,7 @@ def print_tags_and_text(p, yield_tags):
                 tags = list(tags) + [construction.name]
             text_to_tags.setdefault((min(y or [-1]), -max(y or [-1]), " ".join(get_text(p, y))), []).extend(tags)
     for (_, _, text), tags in sorted(text_to_tags.items()):
-        print((",".join(sorted(set(filter(lambda x: x[0] is None, tags)))) + ": " + text) if tags else text)
+        print((",".join([str(x) for x in sorted(set(filter(None, tags)))]) + ": " + text) if tags else text)
 
 
 def expand_equivalents(tag_set):
