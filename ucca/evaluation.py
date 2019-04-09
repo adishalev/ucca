@@ -54,7 +54,7 @@ def get_text(p, positions):
     return [l0.by_position(i).text for i in range(1, len(l0.all) + 1) if i in positions]
 
 
-def print_tags_and_text(p, yield_tags):
+def print_tags_and_text_mutual(p, yield_tags):
     text_to_tags = {}
     for construction, construction_yield_tags in yield_tags.items():
         for y, tags in construction_yield_tags.items():
@@ -64,6 +64,16 @@ def print_tags_and_text(p, yield_tags):
     for (_, _, text), tags in sorted(text_to_tags.items()):
         print((",".join([str(x) for x in sorted(set(filter(None, tags)))]) + ": " + text) if tags else text)
 
+def print_tags_and_text_only(p, yield_tags):
+    text_to_tags = {}
+    for construction, construction_yield_tags in yield_tags.items():
+        for y, tags in construction_yield_tags.items():
+            if construction.criterion is None:  # category from reference yield tags
+                tags = list(tags) + [construction.name]
+            text_to_tags.setdefault((min(y or [-1]), -max(y or [-1]), " ".join(get_text(p, y))), []).extend(tags)
+    for (_, _, text), tags in sorted(text_to_tags.items()):
+        tags = [c.edge.tag for c in tags]
+        print((",".join([str(x) for x in sorted(set(filter(None, tags)))]) + ": " + text) if tags else text)
 
 def expand_equivalents(tag_set):
     """
@@ -150,11 +160,11 @@ class Evaluator:
             print("Evaluation type: (" + eval_type + ")")
             if self.units and p1 is not None:
                 print("==> Mutual Units:")
-                print_tags_and_text(p1, mutual)
+                print_tags_and_text_mutual(p1, mutual)
                 print("==> Only in guessed:")
-                print_tags_and_text(p1, only[0])
+                print_tags_and_text_only(p1, only[0])
                 print("==> Only in reference:")
-                print_tags_and_text(p2, only[1])
+                print_tags_and_text_only(p2, only[1])
             if self.fscore:
                 res.print()
                 res.print_confusion_matrix()
