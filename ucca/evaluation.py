@@ -201,8 +201,9 @@ class Scores:
         evaluators = [s.evaluators for s in scores]
         names = list(set(s.name for s in scores))
         formats = list(set(s.format for s in scores))
+        eval_types = set.union(*[set(e.keys()) for e in evaluators])
         return Scores(((t, EvaluatorResults.aggregate(filter(None, (e.get(t) for e in evaluators))))
-                       for t in EVAL_TYPES),
+                       for t in eval_types),
                       name=names[0] if len(names) == 1 else None,
                       evaluation_format=formats[0] if len(formats) == 1 else None)
 
