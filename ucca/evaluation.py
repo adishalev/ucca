@@ -234,6 +234,8 @@ class Scores:
                 for x in constructions for y in titles]
 
     def __getitem__(self, eval_type):
+        if eval_type not in self.evaluators:
+            print("here")
         return self.evaluators[eval_type]
 
 
