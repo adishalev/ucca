@@ -167,7 +167,7 @@ class Evaluator:
                 print_tags_and_text_only(p2, only[1])
             if self.fscore:
                 res.print()
-                res.results.print_confusion_matrix()
+                res.print_confusion_matrix()
         return res
 
 
