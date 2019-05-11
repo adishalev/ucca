@@ -20,6 +20,7 @@ UNLABELED = "unlabeled"
 WEAK_LABELED = "weak_labeled"
 LABELED = "labeled"
 REFINEMENT = "refinement"
+WEAK_REFINEMENT = "weak_refinement"
 
 EVAL_TYPES = (LABELED, UNLABELED, WEAK_LABELED)
 
@@ -54,7 +55,7 @@ def get_text(p, positions):
     return [l0.by_position(i).text for i in range(1, len(l0.all) + 1) if i in positions]
 
 
-def print_tags_and_text_mutual(p, yield_tags):
+def print_tags_and_text(p, yield_tags):
     text_to_tags = {}
     for construction, construction_yield_tags in yield_tags.items():
         for y, tags in construction_yield_tags.items():
@@ -62,18 +63,9 @@ def print_tags_and_text_mutual(p, yield_tags):
                 tags = list(tags) + [construction.name]
             text_to_tags.setdefault((min(y or [-1]), -max(y or [-1]), " ".join(get_text(p, y))), []).extend(tags)
     for (_, _, text), tags in sorted(text_to_tags.items()):
+        tags = [(c.edge.tag, c.edge.refinement) for c in tags]
         print((",".join([str(x) for x in sorted(set(filter(None, tags)))]) + ": " + text) if tags else text)
 
-def print_tags_and_text_only(p, yield_tags):
-    text_to_tags = {}
-    for construction, construction_yield_tags in yield_tags.items():
-        for y, tags in construction_yield_tags.items():
-            if construction.criterion is None:  # category from reference yield tags
-                tags = list(tags) + [construction.name]
-            text_to_tags.setdefault((min(y or [-1]), -max(y or [-1]), " ".join(get_text(p, y))), []).extend(tags)
-    for (_, _, text), tags in sorted(text_to_tags.items()):
-        tags = [(c.edge.tag, c.edge.refinement) for c in tags if c.edge.tag and c.edge.refinement]
-        print((",".join([str(x) for x in sorted(set(filter(None, tags)))]) + ": " + text) if tags else text)
 
 def expand_equivalents(tag_set):
     """
@@ -81,6 +73,14 @@ def expand_equivalents(tag_set):
     :param tag_set: set of tags (strings) to expand
     """
     return tag_set.union(t1 for t in tag_set for pair in EQUIV for t1 in pair if t in pair and t != t1)
+
+
+def expand_equivalent_refinements(tag_set):
+    """
+    Returns a set of all the tags in the tag set or those equivalent to them
+    :param tag_set: set of tags (strings) to expand
+    """
+    return tag_set.union((t[0], t1) for t in tag_set for pair in EQUIV for t1 in pair if t[1] in pair and t[1] != t1)
 
 
 class Evaluator:
@@ -107,6 +107,9 @@ class Evaluator:
             else:
                 if eval_type == REFINEMENT:
                     tags = [set((c.edge.tag, c.edge.refinement) for c in m[y]) for m in (m1, m2)]
+                elif eval_type == WEAK_REFINEMENT:
+                    tags = [set((c.edge.tag, c.edge.refinement) for c in m[y]) for m in (m1, m2)]
+                    tags[0] = expand_equivalent_refinements(tags[0])
                 else:
                     tags = [set(c.edge.tag for c in m[y]) for m in (m1, m2)]
                 if eval_type == WEAK_LABELED:
@@ -156,15 +159,15 @@ class Evaluator:
         only = [{c: {y: tags for y, tags in d.items() if y not in mutual[c]} for c, d in m.items()} for m in maps]
         res = EvaluatorResults((c, SummaryStatistics(len(mutual[c]), len(only[0].get(c, ())), len(only[1].get(c, ())),
                                                      None if counters is None else counters.get(c))) for c in mutual)
-        if self.verbose or eval_type == REFINEMENT:
+        if self.verbose:
             print("Evaluation type: (" + eval_type + ")")
             if self.units and p1 is not None:
                 print("==> Mutual Units:")
-                print_tags_and_text_mutual(p1, mutual)
+                print_tags_and_text(p1, mutual)
                 print("==> Only in guessed:")
-                print_tags_and_text_only(p1, only[0])
+                print_tags_and_text(p1, only[0])
                 print("==> Only in reference:")
-                print_tags_and_text_only(p2, only[1])
+                print_tags_and_text(p2, only[1])
             if self.fscore:
                 res.print()
                 #res.print_confusion_matrix()

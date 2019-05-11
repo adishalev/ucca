@@ -183,10 +183,10 @@ CONSTRUCTIONS = (
                  lambda c: "ADJ" in c.pos and "NOUN" not in c.pos and c.is_predicate()),
     Construction("expletives", "Expletives",
                  lambda c: c.tokens <= {"it", "there"} and c.edge.tag == EdgeTags.Function),
-    Construction("primary_participants", "Regular Participant edges",
-                 lambda c: c.is_primary() and c.edge.tag == "A"),
-    Construction("remote_participants", "Remote Participant edges",
-                 lambda c: c.is_remote() and c.edge.tag == "A"),
+    Construction("primary_participants", "Regular Refined edges",
+                 lambda c: c.is_primary() and c.edge.refinement),
+    Construction("remote_participants", "Remote Refined edges",
+                 lambda c: c.is_remote() and c.edge.refinement),
     Categories(),
 )
 PRIMARY = CONSTRUCTIONS[0]
