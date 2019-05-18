@@ -312,7 +312,7 @@ class EvaluatorResults:
         Aggregate primary and remote SummaryStatistics in this EvaluatorResults instance
         :return: SummaryStatistics object representing aggregation over primary and remote
         """
-        return SummaryStatistics.aggregate([self[c] for c in ["primary_refinement", "remote_refinement"]])
+        return SummaryStatistics.aggregate([self[c] for c in ["primary_refinements", "remote_refinements"]])
 
     def __bool__(self):
         return bool(self.results and any(self.results.values()))
