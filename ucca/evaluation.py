@@ -185,15 +185,17 @@ class Scores:
         self.name = name or "UCCA"
         self.format = evaluation_format or "ucca"
 
-    def average_f1(self, mode=LABELED, default=True):
+    def average_f1(self, mode=LABELED, refinement=False):
         """
         Calculate the average F1 score across primary and remote edges
         :param mode: LABELED, UNLABELED or WEAK_LABELED
         :return: a single number, the average F1
         """
-        if default:
-            return float(self[mode].aggregate_default().f1)
-        return float(self[mode].aggregate_results().f1)
+        # if mode == Refinement ?!?!?!
+        if refinement:
+            return float(self[mode].aggregate_refinement().f1)
+        return float(self[mode].aggregate_default().f1)
+
 
     @staticmethod
     def aggregate(scores):
@@ -305,12 +307,12 @@ class EvaluatorResults:
         """
         return SummaryStatistics.aggregate([self[c] for c in self.default.values()])
 
-    def aggregate_results(self):
+    def aggregate_refinement(self):
         """
-        Aggregate results evaluators SummaryStatistics in this EvaluatorResults instance
+        Aggregate primary and remote SummaryStatistics in this EvaluatorResults instance
         :return: SummaryStatistics object representing aggregation over primary and remote
         """
-        return SummaryStatistics.aggregate([self[c] for c in self.results.values()])
+        return SummaryStatistics.aggregate([self[c] for c in ["primary_refinement", "remote_refinement"]])
 
     def __bool__(self):
         return bool(self.results and any(self.results.values()))
