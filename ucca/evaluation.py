@@ -244,6 +244,9 @@ class Scores:
     def __getitem__(self, eval_type):
         return self.evaluators[eval_type]
 
+    def __contains__(self, key):
+        return key in self.evaluators
+
 
 class EvaluatorResults:
     def __init__(self, results, default=None):
