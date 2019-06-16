@@ -126,7 +126,7 @@ class Evaluator:
                     tags = [sorted(set(c.edge.tag for c in m.get(y, ()) if not c.is_unary_child)) for m in (m1, m2)]
                 counter[tuple("|".join(t) or "<UNMATCHED>" for t in tags)] += 1
 
-    def get_scores(self, p1, p2, eval_type, r=None):
+    def get_scores(self, p1, p2, eval_type, r=None, default=None):
         """
         prints the relevant statistics and f-scores. eval_type can be 'unlabeled', 'labeled' or 'weak_labeled'.
         calculates a set of all the yields such that both passages have a unit with that yield.
@@ -158,7 +158,7 @@ class Evaluator:
 
         only = [{c: {y: tags for y, tags in d.items() if y not in mutual[c]} for c, d in m.items()} for m in maps]
         res = EvaluatorResults((c, SummaryStatistics(len(mutual[c]), len(only[0].get(c, ())), len(only[1].get(c, ())),
-                                                     None if counters is None else counters.get(c))) for c in mutual)
+                                                     None if counters is None else counters.get(c))) for c in mutual, default=default)
         if self.verbose:
             print("Evaluation type: (" + eval_type + ")")
             if self.units and p1 is not None:
@@ -185,14 +185,13 @@ class Scores:
         self.name = name or "UCCA"
         self.format = evaluation_format or "ucca"
 
-    def average_f1(self, mode=LABELED, refinement=False):
+    def average_f1(self, mode=LABELED, refinement_construction=False):
         """
         Calculate the average F1 score across primary and remote edges
         :param mode: LABELED, UNLABELED or WEAK_LABELED
         :return: a single number, the average F1
         """
-        # if mode == Refinement ?!?!?!
-        if refinement:
+        if refinement_construction:
             return float(self[mode].aggregate_refinement().f1)
         return float(self[mode].aggregate_default().f1)
 
@@ -356,7 +355,7 @@ class SummaryStatistics:
         return bool(self.num_matches or self.num_only_guessed or self.num_only_ref or self.errors)
 
 
-def evaluate(guessed, ref, converter=None, verbose=False, constructions=DEFAULT,
+def evaluate(guessed, ref, converter=None, verbose=False, constructions=DEFAULT, default=DEFAULT,
              units=False, fscore=True, errors=False, normalize=True, eval_types=None, ref_yield_tags=None, **kwargs):
     """
     Compare two passages and return requested diagnostics and scores, possibly printing them too.
@@ -384,5 +383,5 @@ def evaluate(guessed, ref, converter=None, verbose=False, constructions=DEFAULT,
         move_functions(guessed, ref)  # move common Fs to be under the root
 
     evaluator = Evaluator(verbose, constructions, units, fscore, errors)
-    return Scores((evaluation_type, evaluator.get_scores(guessed, ref, evaluation_type, r=ref_yield_tags))
+    return Scores((evaluation_type, evaluator.get_scores(guessed, ref, evaluation_type, r=ref_yield_tags, default=default))
                   for evaluation_type in (eval_types if eval_types else EVAL_TYPES))
