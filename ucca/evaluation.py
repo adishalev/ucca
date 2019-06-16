@@ -157,8 +157,9 @@ class Evaluator:
                                   counter=None if counters is None else counters.setdefault(construction, Counter()))
 
         only = [{c: {y: tags for y, tags in d.items() if y not in mutual[c]} for c, d in m.items()} for m in maps]
-        res = EvaluatorResults((c, SummaryStatistics(len(mutual[c]), len(only[0].get(c, ())), len(only[1].get(c, ())),
-                                                     None if counters is None else counters.get(c))) for c in mutual, default=default)
+        res = EvaluatorResults(((c, SummaryStatistics(len(mutual[c]), len(only[0].get(c, ())), len(only[1].get(c, ())),
+                                                     None if counters is None else counters.get(c))) for c in mutual),
+                               default=default)
         if self.verbose:
             print("Evaluation type: (" + eval_type + ")")
             if self.units and p1 is not None:
