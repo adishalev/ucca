@@ -186,14 +186,12 @@ class Scores:
         self.name = name or "UCCA"
         self.format = evaluation_format or "ucca"
 
-    def average_f1(self, mode=LABELED, refinement_construction=False):
+    def average_f1(self, mode=LABELED):
         """
         Calculate the average F1 score across primary and remote edges
         :param mode: LABELED, UNLABELED or WEAK_LABELED
         :return: a single number, the average F1
         """
-        if refinement_construction:
-            return float(self[mode].aggregate_refinement().f1)
         return float(self[mode].aggregate_default().f1)
 
 
@@ -384,5 +382,6 @@ def evaluate(guessed, ref, converter=None, verbose=False, constructions=DEFAULT,
         move_functions(guessed, ref)  # move common Fs to be under the root
 
     evaluator = Evaluator(verbose, constructions, units, fscore, errors)
-    return Scores((evaluation_type, evaluator.get_scores(guessed, ref, evaluation_type, r=ref_yield_tags, default=default))
-                  for evaluation_type in (eval_types if eval_types else EVAL_TYPES))
+    return Scores(((evaluation_type, evaluator.get_scores(guessed, ref, evaluation_type, r=ref_yield_tags, default=default))
+                  for evaluation_type in (eval_types if eval_types else EVAL_TYPES)),
+                  evaluation_format=REFINEMENT if REFINEMENT in eval_types else None)
