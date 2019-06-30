@@ -37,6 +37,10 @@ def not_split_dir(filename):
 def split_passages(directory, train, dev, link, quiet=False):
     filenames = sorted(filter(not_split_dir, os.listdir(directory)), key=numeric)
     assert filenames, "No files to split"
+    if train <= 1.0:
+        train = int(len(filenames) * train)
+    if dev <= 1.0:
+        dev = int(len(filenames) * dev)
     assert train + dev <= len(filenames), "Not enough files to split: %d+%d>%d" % (train, dev, len(filenames))
     for subdirectory in "train", "dev", "test":
         os.makedirs(os.path.join(directory, subdirectory), exist_ok=True)
