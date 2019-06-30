@@ -77,9 +77,9 @@ def main(args):
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(description=desc)
     argparser.add_argument("directory", default=".", nargs="?", help="directory to split (default: current directory)")
-    argparser.add_argument("-t", "--train", type=int, default=TRAIN_DEFAULT,
+    argparser.add_argument("-t", "--train", type=float, default=TRAIN_DEFAULT,
                            help="size of train split (default: %d)" % TRAIN_DEFAULT)
-    argparser.add_argument("-d", "--dev", type=int, default=DEV_DEFAULT,
+    argparser.add_argument("-d", "--dev", type=float, default=DEV_DEFAULT,
                            help="size of dev split (default: %d)" % DEV_DEFAULT)
     argparser.add_argument("-l", "--link", action="store_true", help="create symbolic link instead of copying")
     argparser.add_argument("-q", "--quiet", action="store_true", help="less output")
