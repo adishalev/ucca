@@ -1,6 +1,7 @@
 import argparse
 import os
 import re
+import random
 from shutil import copyfile
 
 desc = """Split a directory of files into "train", "dev" and "test" directories.
@@ -8,6 +9,7 @@ All files not in either "train" or "dev" will go into "test".
 """
 TRAIN_DEFAULT = 300
 DEV_DEFAULT = 34
+TOTAL_DEFAULT = 1.
 
 
 # TEST on all the rest
@@ -34,8 +36,10 @@ def not_split_dir(filename):
     return filename not in ("train", "dev", "test") and not filename.startswith(".")
 
 
-def split_passages(directory, train, dev, link, quiet=False):
+def split_passages(directory, train, dev, total, link, quiet=False):
     filenames = sorted(filter(not_split_dir, os.listdir(directory)), key=numeric)
+    if total <1.:
+        filenames = random.sample(filenames, int(len(filenames)*total))
     assert filenames, "No files to split"
     if train <= 1.0:
         train = int(len(filenames) * train)
@@ -44,7 +48,8 @@ def split_passages(directory, train, dev, link, quiet=False):
     assert train + dev <= len(filenames), "Not enough files to split: %d+%d>%d" % (train, dev, len(filenames))
     for subdirectory in "train", "dev", "test":
         os.makedirs(os.path.join(directory, subdirectory), exist_ok=True)
-    print("%d files to split: %d/%d/%d" % (len(filenames), train, dev, len(filenames) - train - dev))
+    test = (len(filenames) - train - dev)
+    print("%d files to split: %d/%d/%d" % (len(filenames), train, dev, test))
     print_format = "Creating link in %s to: " if link else "Copying to %s: "
     if not quiet:
         print(print_format % "train", end="", flush=True)
@@ -71,7 +76,7 @@ def split_passages(directory, train, dev, link, quiet=False):
 
 
 def main(args):
-    split_passages(os.path.abspath(args.directory), args.train, args.dev, link=args.link, quiet=args.quiet)
+    split_passages(os.path.abspath(args.directory), args.train, args.dev, args.total, link=args.link, quiet=args.quiet)
 
 
 if __name__ == "__main__":
@@ -81,6 +86,8 @@ if __name__ == "__main__":
                            help="size of train split (default: %d)" % TRAIN_DEFAULT)
     argparser.add_argument("-d", "--dev", type=float, default=DEV_DEFAULT,
                            help="size of dev split (default: %d)" % DEV_DEFAULT)
+    argparser.add_argument("-total", "--total", type=float, default=TOTAL_DEFAULT,
+                           help="proportion of data to use (default: %d)" % TOTAL_DEFAULT)
     argparser.add_argument("-l", "--link", action="store_true", help="create symbolic link instead of copying")
     argparser.add_argument("-q", "--quiet", action="store_true", help="less output")
     main(argparser.parse_args())
