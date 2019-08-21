@@ -36,9 +36,11 @@ def not_split_dir(filename):
     return filename not in ("train", "dev", "test") and not filename.startswith(".")
 
 
-def split_passages(directory, train, dev, total, link, quiet=False):
+def split_passages(directory, train, dev, total, link, quiet=False, shuffle=False):
     filenames = sorted(filter(not_split_dir, os.listdir(directory)), key=numeric)
-    if total <1.:
+    if shuffle:
+        random.shuffle(filenames)
+    if total < 1.:
         filenames = random.sample(filenames, int(len(filenames)*total))
     assert filenames, "No files to split"
     if train <= 1.0:
@@ -76,7 +78,8 @@ def split_passages(directory, train, dev, total, link, quiet=False):
 
 
 def main(args):
-    split_passages(os.path.abspath(args.directory), args.train, args.dev, args.total, link=args.link, quiet=args.quiet)
+    split_passages(os.path.abspath(args.directory), args.train, args.dev, args.total, link=args.link,
+                   quiet=args.quiet, shuffle=args.shuffle)
 
 
 if __name__ == "__main__":
@@ -90,4 +93,5 @@ if __name__ == "__main__":
                            help="proportion of data to use (default: %d)" % TOTAL_DEFAULT)
     argparser.add_argument("-l", "--link", action="store_true", help="create symbolic link instead of copying")
     argparser.add_argument("-q", "--quiet", action="store_true", help="less output")
+    argparser.add_argument("-s", "--shuffle", action="store_false", help="shuffle corpus")
     main(argparser.parse_args())
