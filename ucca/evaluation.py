@@ -383,5 +383,7 @@ def evaluate(guessed, ref, converter=None, verbose=False, constructions=DEFAULT,
 
     evaluator = Evaluator(verbose, constructions, units, fscore, errors)
     return Scores(((evaluation_type, evaluator.get_scores(guessed, ref, evaluation_type, r=ref_yield_tags, default=default))
-                  for evaluation_type in (eval_types if eval_types else EVAL_TYPES)),
-                  evaluation_format=REFINEMENT if REFINEMENT in eval_types else None)
+                   for evaluation_type in (eval_types if eval_types else EVAL_TYPES)))
+#                  for evaluation_type in (eval_types if eval_types else EVAL_TYPES)),
+#                  evaluation_format=REFINEMENT if REFINEMENT in eval_types else None)
+# Removing this because I can't find where it is being used.
