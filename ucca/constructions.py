@@ -273,5 +273,5 @@ def create_passage_yields(p, *args, tags=True, **kwargs):
             terminal_yield = candidate.terminal_yield(construction)
             # if terminal_yield:
             construction_yield_candidates.setdefault(terminal_yield, []).append(
-                candidate.edge.tag if tags else candidate)
+                (candidate.edge.tag, candidate.edge.refinement) if tags else candidate)
     return yield_candidates

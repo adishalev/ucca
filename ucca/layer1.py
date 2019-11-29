@@ -468,8 +468,11 @@ class Layer1(core.Layer):
         """
         return parent.add_multiple(edge_categories, child, edge_attrib={'remote': True})
 
-    def add_remote(self, parent, tag, child):
-        return self.add_remote_multiple(parent, [(tag,)], child)
+    def add_remote(self, parent, tag, refinement, child):
+        if refinement:
+            return self.add_remote_multiple(parent, [(tag, ), (refinement, "", "", tag )], child)
+        else:
+            return self.add_remote_multiple(parent, [(tag,)], child)
 
     def add_punct(self, parent, terminal, layer= None, slot= None):
         """Adds a PunctNode as the child of parent and the Terminal under it.
